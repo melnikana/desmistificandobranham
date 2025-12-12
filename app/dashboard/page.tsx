@@ -17,6 +17,12 @@ export default function DashboardPage() {
       if (!mounted) return;
       const u = data?.user || null;
       if (!u) {
+        const dev = typeof window !== "undefined" ? localStorage.getItem("dev_auth_user") : null;
+        if (dev) {
+          setUser(JSON.parse(dev));
+          setLoading(false);
+          return;
+        }
         router.push("/login");
         return;
       }
@@ -27,7 +33,12 @@ export default function DashboardPage() {
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session?.user) {
-        router.push("/login");
+        const dev = typeof window !== "undefined" ? localStorage.getItem("dev_auth_user") : null;
+        if (!dev) {
+          router.push("/login");
+        } else {
+          setUser(JSON.parse(dev));
+        }
       } else {
         setUser(session.user);
       }
@@ -41,6 +52,9 @@ export default function DashboardPage() {
 
   async function handleLogout() {
     await supabase.auth.signOut();
+    try {
+      localStorage.removeItem("dev_auth_user");
+    } catch (e) {}
     router.push("/login");
   }
 

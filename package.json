@@ -9,7 +9,14 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@lexical/code": "^0.39.0",
+    "@lexical/html": "^0.39.0",
+    "@lexical/markdown": "^0.39.0",
+    "@lexical/react": "^0.39.0",
+    "@lexical/rich-text": "^0.39.0",
+    "@lexical/table": "^0.39.0",
     "@supabase/supabase-js": "^2.86.2",
+    "lexical": "^0.39.0",
     "next": "16.0.7",
     "react": "19.2.0",
     "react-dom": "19.2.0"

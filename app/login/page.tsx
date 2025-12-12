@@ -16,6 +16,13 @@ export default function LoginPage() {
     setLoading(true);
     setMsg("");
     try {
+      // Dev-only: allow a local test user `admin`/`admin` when running on localhost
+      const isLocal = typeof window !== "undefined" && (process.env.NODE_ENV === "development" || window.location.hostname === "localhost");
+      if (isLocal && email.trim() === "admin" && password === "admin") {
+        localStorage.setItem("dev_auth_user", JSON.stringify({ email: "admin" }));
+        router.push("/dashboard");
+        return;
+      }
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       router.push("/dashboard");
