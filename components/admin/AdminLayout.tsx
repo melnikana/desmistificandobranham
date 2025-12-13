@@ -1,49 +1,46 @@
-// components/admin/AdminLayout.tsx
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabaseClient";
+import React, { useState } from "react";
+import AdminSidebar from "./AdminSidebar";
+import AdminHeader from "./AdminHeader";
+import { Button } from "@/components/ui/button";
+import { Menu, X } from "lucide-react";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push("/login");
-  }
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f6f7f9" }}>
-      <aside style={{
-        width: 260, padding: 20, borderRight: "1px solid #e6e9ee",
-        background: "#fff"
-      }}>
-        <div style={{ marginBottom: 18 }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: 8, background: "#0f1724",
-            color: "#fff", display: "flex", alignItems: "center", justifyContent: "center",
-            fontWeight: 700
-          }}>B</div>
-        </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Sidebar desktop */}
+      <div className="hidden lg:block">
+        <AdminSidebar />
+      </div>
 
-        <nav style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <Link href="/admin"><a style={{ padding: "8px 10px", borderRadius: 6 }}>Painel</a></Link>
-          <Link href="/admin/create-post"><a style={{ padding: "8px 10px", borderRadius: 6 }}>Novo post</a></Link>
-          <Link href="/admin/posts"><a style={{ padding: "8px 10px", borderRadius: 6 }}>Todos os posts</a></Link>
-        </nav>
+      {/* Sidebar mobile */}
+      <div className="lg:hidden">
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
+          <SheetTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="fixed top-4 left-4 z-50 lg:hidden"
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
+          </SheetTrigger>
+          <SheetContent side="left" className="w-64 p-0">
+            <AdminSidebar />
+          </SheetContent>
+        </Sheet>
+      </div>
 
-        <div style={{ marginTop: 30 }}>
-          <button onClick={handleLogout} style={{
-            width: "100%", padding: "10px", borderRadius: 6, border: "1px solid #e6e9ee", background: "#fff"
-          }}>Sair</button>
-        </div>
-      </aside>
-
-      <main style={{ flex: 1, padding: 24 }}>
-        {children}
-      </main>
+      <div className="lg:ml-64">
+        <AdminHeader />
+        <main className="p-4 lg:p-6">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

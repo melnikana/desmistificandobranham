@@ -3,9 +3,10 @@
 
 import React, { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/AdminLayout";
-import PostsList from "@/components/admin/PostsList";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -36,15 +37,28 @@ export default function AdminPage() {
 
   return (
     <AdminLayout>
-      <div style={{ maxWidth: 1100 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-          <h1>Painel administrativo</h1>
-          <div>
-            <button onClick={() => router.push("/admin/create-post")}>Novo post</button>
-          </div>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+          <Button 
+            onClick={() => router.push("/admin/create-post")}
+            className="text-white hover:bg-[#2a2a2a]"
+            style={{ backgroundColor: 'var(--background)' }}
+          >
+            <Plus className="h-4 w-4" />
+            Novo post
+          </Button>
         </div>
-
-        <PostsList />
+        
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold mb-4" style={{ color: 'var(--color-zinc-950)' }}>Bem-vindo ao Painel Administrativo</h2>
+          <p className="text-gray-600 mb-4">
+            Gerencie seus posts, categorias, tags e muito mais.
+          </p>
+          <Button onClick={() => router.push("/admin/posts")} variant="outline">
+            Ver todos os posts
+          </Button>
+        </div>
       </div>
     </AdminLayout>
   );

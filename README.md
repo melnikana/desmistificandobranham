@@ -29,6 +29,28 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Variáveis de Ambiente
+
+Para o envio de emails funcionar, você precisa configurar as seguintes variáveis de ambiente:
+
+```env
+# Resend API (para envio de emails)
+RESEND_API_KEY=re_xxxxxxxxxxxxx
+RESEND_FROM_EMAIL=noreply@seudominio.com
+
+# Supabase (se estiver usando)
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+```
+
+### Configuração do Resend
+
+1. Crie uma conta em [Resend](https://resend.com)
+2. Obtenha sua API Key na dashboard
+3. Configure um domínio verificado ou use o email padrão `onboarding@resend.dev` para testes
+4. Adicione `RESEND_API_KEY` e `RESEND_FROM_EMAIL` ao seu arquivo `.env.local`
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.

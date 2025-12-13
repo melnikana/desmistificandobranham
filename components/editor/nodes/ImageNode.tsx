@@ -10,7 +10,7 @@ type SerializedImageNode = {
   height?: number;
 };
 
-export class ImageNode extends DecoratorNode<JSX.Element> {
+export class ImageNode extends DecoratorNode<React.ReactElement> {
   __src: string;
   __alt?: string;
 
