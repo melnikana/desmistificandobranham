@@ -67,7 +67,7 @@ export default function DashboardPage() {
       <p>Bem-vinda, {user.email}</p>
 
       <div style={{ marginTop: 20 }}>
-        <button onClick={() => router.push("/admin/create-post")} style={{ marginRight: 8 }}>
+        <button onClick={() => router.push("/admin/posts/new")} style={{ marginRight: 8 }}>
           Novo Post
         </button>
         <button onClick={handleLogout}>Sair</button>

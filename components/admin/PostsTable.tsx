@@ -102,7 +102,7 @@ export default function PostsTable({
     if (onEdit) {
       onEdit(postId);
     } else {
-      router.push(`/admin/create-post?id=${postId}`);
+      router.push(`/admin/posts/new?id=${postId}`);
     }
   };
 
@@ -164,7 +164,7 @@ export default function PostsTable({
                 </TableCell>
                 <TableCell>
                   <Link
-                    href={`/admin/create-post?id=${post.id}`}
+                    href={`/admin/posts/new?id=${post.id}`}
                     className="font-medium text-blue-600 hover:text-blue-800 hover:underline"
                   >
                     {post.title || "Sem título"}

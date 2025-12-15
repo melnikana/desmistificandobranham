@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import AdminLayout from "@/components/admin/AdminLayout";
+import AdminShell from "@/components/admin/AdminShell";
 import { supabase } from "@/lib/supabaseClient";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -197,15 +198,19 @@ export default function NewUserPage() {
 
           // Se houver tabela de profiles, salvar também lá
           if (authData.user) {
+            // Tentar inserir perfil mas, se a tipagem do Supabase não reconhecer, ignorar tipos
             const { error: profileError } = await supabase
               .from("profiles")
-              .upsert({
-                id: authData.user.id,
-                name: userData.name,
-                email: userData.email,
-                role: userData.role,
-                created_at: userData.created_at,
-              });
+              // @ts-ignore - profiles table types may not be generated, ignore for dev
+              .upsert([
+                {
+                  id: authData.user.id,
+                  name: userData.name,
+                  email: userData.email,
+                  role: userData.role,
+                  created_at: userData.created_at,
+                }
+              ]);
 
             // Ignorar erro se a tabela não existir
             if (profileError && !profileError.message.includes("does not exist")) {
@@ -290,232 +295,214 @@ export default function NewUserPage() {
 
   if (checking) {
     return (
-      <AdminLayout>
+      <AdminShell title="Adicionar Usuário">
         <div className="p-10">Verificando sessão...</div>
-      </AdminLayout>
+      </AdminShell>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="space-y-6">
-        {/* Breadcrumb e Título */}
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-          <button
-            onClick={() => router.push("/admin/users")}
-            className="hover:text-gray-900 transition-colors"
-          >
-            Usuários
-          </button>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">Adicionar novo</span>
-        </div>
-
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">Adicionar novo usuário</h1>
-        </div>
-
-        {/* Card do Formulário */}
-        <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-          <div className="flex flex-col space-y-1.5 p-6">
-            <h2 className="text-2xl font-semibold leading-none tracking-tight text-gray-900">
-              Informações do usuário
-            </h2>
-            <p className="text-sm text-gray-600">
-              Preencha os dados abaixo para criar um novo usuário no sistema.
+    <AdminShell title="Adicionar Usuário">
+      <div className="max-w-2xl mx-auto space-y-6">
+        {success && (
+          <div className="rounded-lg border bg-green-50 p-4 text-green-900 shadow-sm">
+            <p className="text-sm font-medium">
+              Usuário criado com sucesso!
             </p>
           </div>
-          <div className="p-6 pt-0">
-            {success && (
-              <div className="mb-6 p-4 rounded-md" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-                <p className="font-medium" style={{ color: '#166534' }}>
-                  Usuário criado com sucesso!
-                </p>
-              </div>
-            )}
+        )}
 
-            {emailSent && (
-              <div className="mb-6 p-4 rounded-md" style={{ backgroundColor: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-                <p className="font-medium" style={{ color: '#166534' }}>
-                  Email com credenciais enviado com sucesso!
-                </p>
-              </div>
-            )}
+        {emailSent && (
+          <div className="rounded-lg border bg-green-50 p-4 text-green-900 shadow-sm">
+            <p className="text-sm font-medium">
+              Email com credenciais enviado com sucesso!
+            </p>
+          </div>
+        )}
 
-            {emailError && (
-              <div className="mb-6 p-4 rounded-md" style={{ backgroundColor: '#fef3c7', border: '1px solid #fcd34d' }}>
-                <p className="font-medium" style={{ color: '#92400e' }}>
-                  Usuário criado, mas houve um problema ao enviar o email: {emailError}
-                </p>
-              </div>
-            )}
+        {emailError && (
+          <div className="rounded-lg border bg-yellow-50 p-4 text-yellow-900 shadow-sm">
+            <p className="text-sm font-medium">
+              Usuário criado, mas houve um problema ao enviar o email: {emailError}
+            </p>
+          </div>
+        )}
 
-            {errorMessage && (
-              <div className="mb-6 p-4 rounded-md" style={{ backgroundColor: '#fef2f2', border: '1px solid #fecaca' }}>
-                <p className="font-medium" style={{ color: '#991b1b' }}>{errorMessage}</p>
-              </div>
-            )}
+        {errorMessage && (
+          <div className="rounded-lg border border-destructive bg-destructive/10 p-4 text-destructive shadow-sm">
+            <p className="text-sm font-medium">{errorMessage}</p>
+          </div>
+        )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Nome completo */}
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-900">Nome completo</Label>
+        {/* Card do Formulário */}
+        <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle>Informações do usuário</CardTitle>
+          <CardDescription>
+            Preencha os dados abaixo para criar um novo usuário no sistema.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Nome completo */}
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome completo</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Digite o nome completo"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errors.name) {
+                    setErrors((prev) => {
+                      const newErrors = { ...prev };
+                      delete newErrors.name;
+                      return newErrors;
+                    });
+                  }
+                }}
+                className={errors.name ? "border-destructive" : ""}
+              />
+              {errors.name && (
+                <p className="text-sm text-destructive">{errors.name}</p>
+              )}
+            </div>
+
+            {/* Email */}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="email@exemplo.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) {
+                    setErrors((prev) => {
+                      const newErrors = { ...prev };
+                      delete newErrors.email;
+                      return newErrors;
+                    });
+                  }
+                }}
+                className={errors.email ? "border-destructive" : ""}
+              />
+              {errors.email && (
+                <p className="text-sm text-destructive">{errors.email}</p>
+              )}
+            </div>
+
+            {/* Senha temporária */}
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha temporária</Label>
+              <div className="flex gap-2">
                 <Input
-                  id="name"
-                  type="text"
-                  placeholder="Digite o nome completo"
-                  value={name}
+                  id="password"
+                  type="password"
+                  placeholder="Digite uma senha ou gere automaticamente"
+                  value={password}
                   onChange={(e) => {
-                    setName(e.target.value);
-                    if (errors.name) {
+                    setPassword(e.target.value);
+                    if (errors.password) {
                       setErrors((prev) => {
                         const newErrors = { ...prev };
-                        delete newErrors.name;
+                        delete newErrors.password;
                         return newErrors;
                       });
                     }
                   }}
-                  className={`bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus-visible:ring-gray-400 ${errors.name ? "border-red-500 focus-visible:ring-red-500" : ""}`}
+                  className={errors.password ? "border-destructive" : ""}
                 />
-                {errors.name && (
-                  <p className="text-sm text-red-600">{errors.name}</p>
-                )}
-              </div>
-
-              {/* Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-900">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="email@exemplo.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (errors.email) {
-                      setErrors((prev) => {
-                        const newErrors = { ...prev };
-                        delete newErrors.email;
-                        return newErrors;
-                      });
-                    }
-                  }}
-                  className={`bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus-visible:ring-gray-400 ${errors.email ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-                />
-                {errors.email && (
-                  <p className="text-sm text-red-600">{errors.email}</p>
-                )}
-              </div>
-
-              {/* Senha temporária */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-900">Senha temporária</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Digite uma senha ou gere automaticamente"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (errors.password) {
-                        setErrors((prev) => {
-                          const newErrors = { ...prev };
-                          delete newErrors.password;
-                          return newErrors;
-                        });
-                      }
-                    }}
-                    className={`bg-white border-gray-300 text-gray-900 placeholder:text-gray-500 focus-visible:ring-gray-400 ${errors.password ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleGeneratePassword}
-                    className="whitespace-nowrap"
-                  >
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Gerar senha automática
-                  </Button>
-                </div>
-                {errors.password && (
-                  <p className="text-sm text-red-600">{errors.password}</p>
-                )}
-                {password && (
-                  <p className="text-xs text-gray-500">
-                    Senha gerada: {password.length} caracteres
-                  </p>
-                )}
-              </div>
-
-              {/* Função do usuário */}
-              <div className="space-y-2">
-                <Label htmlFor="role" className="text-gray-900">Função do usuário</Label>
-                <Select
-                  value={role}
-                  onValueChange={(value) => {
-                    setRole(value);
-                    if (errors.role) {
-                      setErrors((prev) => {
-                        const newErrors = { ...prev };
-                        delete newErrors.role;
-                        return newErrors;
-                      });
-                    }
-                  }}
-                >
-                  <SelectTrigger
-                    id="role"
-                    className={`bg-white border-gray-300 text-gray-900 focus:ring-gray-400 ${errors.role ? "border-red-500 focus-visible:ring-red-500" : ""}`}
-                  >
-                    <SelectValue placeholder="Selecione a função" className="text-gray-500" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-gray-200 text-gray-900">
-                    <SelectItem value="administrador" className="text-gray-900 focus:bg-gray-100">Administrador</SelectItem>
-                    <SelectItem value="editor" className="text-gray-900 focus:bg-gray-100">Editor</SelectItem>
-                    <SelectItem value="autor" className="text-gray-900 focus:bg-gray-100">Autor</SelectItem>
-                    <SelectItem value="colaborador" className="text-gray-900 focus:bg-gray-100">Colaborador</SelectItem>
-                    <SelectItem value="assinante" className="text-gray-900 focus:bg-gray-100">Assinante</SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.role && (
-                  <p className="text-sm text-red-600">{errors.role}</p>
-                )}
-              </div>
-
-              {/* Botões */}
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => router.push("/admin/users")}
-                  disabled={loading}
-                  className="border-gray-300 hover:bg-gray-50"
-                  style={{ color: 'var(--color-gray-100)' }}
+                  onClick={handleGeneratePassword}
+                  className="whitespace-nowrap"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={loading || success}
-                  className="bg-gray-900 text-white hover:bg-gray-800 disabled:opacity-50"
-                >
-                  {loading ? (
-                    <>
-                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                      Criando...
-                    </>
-                  ) : (
-                    "Criar usuário"
-                  )}
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Gerar senha
                 </Button>
               </div>
-            </form>
-          </div>
-        </div>
+              {errors.password && (
+                <p className="text-sm text-destructive">{errors.password}</p>
+              )}
+              {password && (
+                <p className="text-xs text-muted-foreground">
+                  Senha gerada: {password.length} caracteres
+                </p>
+              )}
+            </div>
+
+            {/* Função do usuário */}
+            <div className="space-y-2">
+              <Label htmlFor="role">Função do usuário</Label>
+              <Select
+                value={role}
+                onValueChange={(value) => {
+                  setRole(value);
+                  if (errors.role) {
+                    setErrors((prev) => {
+                      const newErrors = { ...prev };
+                      delete newErrors.role;
+                      return newErrors;
+                    });
+                  }
+                }}
+              >
+                <SelectTrigger
+                  id="role"
+                  className={errors.role ? "border-destructive" : ""}
+                >
+                  <SelectValue placeholder="Selecione a função" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="administrador">Administrador</SelectItem>
+                  <SelectItem value="editor">Editor</SelectItem>
+                  <SelectItem value="autor">Autor</SelectItem>
+                  <SelectItem value="colaborador">Colaborador</SelectItem>
+                  <SelectItem value="assinante">Assinante</SelectItem>
+                </SelectContent>
+              </Select>
+              {errors.role && (
+                <p className="text-sm text-destructive">{errors.role}</p>
+              )}
+            </div>
+
+            {/* Botões */}
+            <div className="flex items-center justify-end gap-2 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.push("/admin/users")}
+                disabled={loading}
+                className="shadow-sm text-gray-100"
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={loading || success}
+                className="shadow-sm"
+              >
+                {loading ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Criando...
+                  </>
+                ) : (
+                  "Criar usuário"
+                )}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
       </div>
-    </AdminLayout>
+    </AdminShell>
   );
 }
 

@@ -13,7 +13,7 @@ import { TabIndentationPlugin } from "@lexical/react/LexicalTabIndentationPlugin
 import { $generateHtmlFromNodes } from "@lexical/html";
 
 import ToolbarPlugin from "./ToolbarPlugin";
-import DraggableBlockPlugin from "./DraggableBlockPlugin";
+import BlockControlsPlugin from "./BlockControlsPlugin";
 import ImagePlugin from "./ImagePlugin";
 
 // Nodes
@@ -86,7 +86,7 @@ export default function Editor({ onChange, initialJSON }: Props) {
           <TabIndentationPlugin />
           <OnChangePlugin onChange={handleChange} />
           <ImagePlugin />
-          <DraggableBlockPlugin />
+          <BlockControlsPlugin />
         </div>
       </div>
     </LexicalComposer>

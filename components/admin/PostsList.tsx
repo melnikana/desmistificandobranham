@@ -95,7 +95,7 @@ export default function PostsList() {
               </div>
 
               <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={() => router.push(`/admin/create-post?id=${p.id}`)} style={{ padding: "6px 10px" }}>Editar</button>
+                <button onClick={() => router.push(`/admin/posts/new?id=${p.id}`)} style={{ padding: "6px 10px" }}>Editar</button>
                 <button onClick={() => handleDelete(p.id)} style={{ padding: "6px 10px" }}>Excluir</button>
               </div>
             </div>

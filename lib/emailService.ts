@@ -92,3 +92,78 @@ export async function sendUserCredentialsEmail(
   }
 }
 
+/**
+ * Envia email com nova senha gerada para redefinição de senha
+ * @param name - Nome completo do usuário
+ * @param email - Email do usuário
+ * @param newPassword - Nova senha gerada
+ * @returns Promise com resultado do envio
+ */
+export async function sendPasswordResetEmail(
+  name: string,
+  email: string,
+  newPassword: string
+): Promise<SendEmailResult> {
+  try {
+    // Obter token de autenticação do usuário atual
+    const { supabase } = await import('@/lib/supabaseClient');
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    let token: string | null = null;
+    
+    if (session?.access_token) {
+      token = session.access_token;
+    } else {
+      // Verificar se está em modo dev (localStorage)
+      if (typeof window !== 'undefined') {
+        const devAuth = localStorage.getItem('dev_auth_user');
+        if (devAuth) {
+          // Em modo dev, usar um token especial que será tratado na API
+          token = 'dev-auth-token';
+        }
+      }
+    }
+
+    if (!token) {
+      return {
+        success: false,
+        error: 'Não autenticado. Faça login para enviar emails.'
+      };
+    }
+
+    const response = await fetch('/api/send-password-reset-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        to: email,
+        name: name,
+        email: email,
+        password: newPassword,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error('Erro ao enviar email:', data);
+      return {
+        success: false,
+        error: data.error || 'Erro ao enviar email',
+      };
+    }
+
+    return {
+      success: true,
+    };
+  } catch (error: any) {
+    console.error('Erro ao chamar API de email:', error);
+    return {
+      success: false,
+      error: error.message || 'Erro desconhecido ao enviar email',
+    };
+  }
+}
+
