@@ -1,4 +1,4 @@
-import { DecoratorNode, NodeKey, LexicalNode, SerializedLexicalNode, Spread, EditorConfig, $getRoot, $createParagraphNode } from 'lexical';
+import { DecoratorNode, NodeKey, LexicalNode, SerializedLexicalNode, Spread, EditorConfig, $getRoot, $createParagraphNode, $parseSerializedNode } from 'lexical';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext';
 import { LexicalComposer } from '@lexical/react/LexicalComposer';
@@ -51,6 +51,10 @@ function TranslationQuoteComponent({
   isSaved: boolean;
   nodeKey: NodeKey;
 }) {
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:TranslationQuoteComponent',message:'Component initialized',data:{initialIsSaved,initialText,initialHtml,hasEditorState:!!initialEditorState},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+  // #endregion
+  
   const [parentEditor] = useLexicalComposerContext();
   const [text, setText] = useState(initialText);
   const [html, setHtml] = useState(initialHtml || '');
@@ -58,6 +62,10 @@ function TranslationQuoteComponent({
   const [source, setSource] = useState<TranslationSource>(initialSource);
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const nestedEditorRef = useRef<any>(null);
+  
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:TranslationQuoteComponent',message:'State initialized',data:{isSaved,text,html},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+  // #endregion
 
   const initialConfig = {
     namespace: 'TranslationQuoteEditor',
@@ -119,21 +127,14 @@ function TranslationQuoteComponent({
             }
           });
           
-          // Força atualização após o render
-          setTimeout(() => {
-            parentEditor.update(() => {
-              const node = $getNodeByKey(nodeKey);
-              if (node && node instanceof TranslationQuoteNode) {
-                // Verifica se existe um próximo node, se não, cria um parágrafo
-                const nextSibling = node.getNextSibling();
-                if (!nextSibling) {
-                  const newParagraph = $createParagraphNode();
-                  node.insertAfter(newParagraph);
-                  newParagraph.select();
-                }
-              }
-            });
-          }, 100);
+          // Chamar callback para criar novo bloco de parágrafo abaixo no HybridBlockEditor
+          const saveFn = (window as any).__saveCitacaoBranham;
+          if (saveFn) {
+            // Aguardar um pouco para garantir que o estado foi atualizado
+            setTimeout(() => {
+              saveFn();
+            }, 100);
+          }
         }
       });
     }
@@ -149,15 +150,82 @@ function TranslationQuoteComponent({
     });
   }, [parentEditor, nodeKey]);
 
-  // Modo Salvo (visualização limpa)
+  const handleCancel = useCallback(() => {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:handleCancel',message:'handleCancel called',data:{isSaved},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    
+    const cancelFn = (window as any).__cancelCitacaoBranham;
+    
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:handleCancel',message:'Checking cancelFn',data:{cancelFnExists:!!cancelFn,typeofCancelFn:typeof cancelFn},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    
+    if (cancelFn) {
+      // Se há função de cancelamento global (bloco criado via botão +), usar ela para deletar o bloco
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:handleCancel',message:'Calling cancelFn to delete block',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      cancelFn();
+    } else {
+      // Se não há função global (bloco criado via comando /), remover o nó diretamente do Lexical
+      // #region agent log
+      fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:handleCancel',message:'No cancelFn, removing node from Lexical',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'B'})}).catch(()=>{});
+      // #endregion
+      
+      parentEditor.update(() => {
+        const node = $getNodeByKey(nodeKey);
+        if (node) {
+          // Remover o nó e inserir um parágrafo vazio no lugar
+          const paragraphNode = $createParagraphNode();
+          node.replace(paragraphNode);
+          paragraphNode.selectEnd();
+        }
+      });
+    }
+  }, [isSaved, parentEditor, nodeKey]);
+
+  // Adicionar handler para ESC
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSaved) {
+        handleCancel();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isSaved, handleCancel]);
+
+  // Verificar se a função global está disponível periodicamente (apenas em modo edição)
+  React.useEffect(() => {
+    if (!isSaved) {
+      const checkInterval = setInterval(() => {
+        const cancelFn = (window as any).__cancelCitacaoBranham;
+        const saveFn = (window as any).__saveCitacaoBranham;
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:checkInterval',message:'Periodic check for global functions',data:{hasCancelFn:!!cancelFn,hasSaveFn:!!saveFn,isSaved},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
+      }, 500);
+      return () => clearInterval(checkInterval);
+    }
+  }, [isSaved]);
+
+  // Modo Salvo (visualização limpa) - imutável
   if (isSaved && text.trim()) {
     const sourceText = TRANSLATION_SOURCES[source];
     return (
       <div 
-        className="my-4 group cursor-pointer hover:opacity-90 transition-opacity translation-quote-node-saved"
-        onClick={handleEdit}
+        className="my-4 group cursor-pointer translation-quote-node-saved"
         contentEditable={false}
         data-lexical-decorator="true"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleEdit();
+        }}
       >
         <div 
           className="translation-quote-content-text"
@@ -204,7 +272,7 @@ function TranslationQuoteComponent({
           <FloatingToolbarPlugin />
         </div>
 
-        {/* Rodapé com Seletor e Botão Salvar */}
+        {/* Rodapé com Seletor e Botões Salvar/Cancelar */}
         <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 flex-1">
@@ -223,12 +291,27 @@ function TranslationQuoteComponent({
                 </SelectContent>
               </Select>
             </div>
-            <button
-              onClick={handleSave}
-              className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
-            >
-              Salvar
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  // #region agent log
+                  fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:CancelButton',message:'Cancel button clicked',data:{isSaved},timestamp:Date.now(),sessionId:'debug-session',runId:'run2',hypothesisId:'B'})}).catch(()=>{});
+                  // #endregion
+                  handleCancel();
+                }}
+                className="px-4 py-2 bg-gray-200 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Excluir
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-4 py-2 bg-gray-900 text-white text-sm font-medium rounded-md hover:bg-gray-800 transition-colors"
+              >
+                Salvar
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -255,6 +338,13 @@ export class TranslationQuoteNode extends DecoratorNode<JSX.Element> {
   __isSaved: boolean;
 
   static getType(): string {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:getType',message:'getType called',data:{returnType:'translation-quote',className:TranslationQuoteNode.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+    // #endregion
+    return 'translation-quote';
+  }
+
+  static getStaticType(): string {
     return 'translation-quote';
   }
 
@@ -267,7 +357,13 @@ export class TranslationQuoteNode extends DecoratorNode<JSX.Element> {
   }
 
   constructor(text: string = '', source: TranslationSource = 'recordings', key?: NodeKey) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:constructor',message:'TranslationQuoteNode constructor called',data:{text,source,hasKey:!!key,nodeType:TranslationQuoteNode.getType()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     super(key);
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:constructor',message:'After super(key) call',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+    // #endregion
     this.__text = text;
     this.__html = '';
     this.__editorState = '';
@@ -366,7 +462,8 @@ export class TranslationQuoteNode extends DecoratorNode<JSX.Element> {
   }
 
   static importJSON(serializedNode: SerializedTranslationQuoteNode): TranslationQuoteNode {
-    const node = $createTranslationQuoteNode(serializedNode.text, serializedNode.source);
+    // Criar o nó diretamente para evitar recursão com $createTranslationQuoteNode
+    const node = new TranslationQuoteNode(serializedNode.text || '', serializedNode.source || 'recordings');
     if (serializedNode.html) {
       node.__html = serializedNode.html;
     }
@@ -396,7 +493,33 @@ export function $createTranslationQuoteNode(
   text: string = '',
   source: TranslationSource = 'recordings'
 ): TranslationQuoteNode {
-  return new TranslationQuoteNode(text, source);
+  // #region agent log
+  fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:$createTranslationQuoteNode',message:'$createTranslationQuoteNode called',data:{text,source,nodeType:TranslationQuoteNode.getType()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+  // #endregion
+  try {
+    // Usar $parseSerializedNode para criar o nó, que usa a classe registrada no editor
+    // Isso evita problemas com hot reload do Next.js
+    const serializedNode: SerializedTranslationQuoteNode = {
+      type: 'translation-quote',
+      text,
+      source,
+      isSaved: false,
+      version: 1,
+    };
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:$createTranslationQuoteNode',message:'Using $parseSerializedNode to create node',data:{serializedNode,hasParseSerializedNode:typeof $parseSerializedNode === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
+    const node = $parseSerializedNode(serializedNode) as TranslationQuoteNode;
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:$createTranslationQuoteNode',message:'Node created successfully via $parseSerializedNode',data:{nodeType:node.getType(),nodeKey:node.getKey(),isInstanceOf:node instanceof TranslationQuoteNode},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
+    return node;
+  } catch (error: any) {
+    // #region agent log
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'TranslationQuoteNode.tsx:$createTranslationQuoteNode',message:'Error creating node',data:{errorMessage:error?.message,errorStack:error?.stack,errorName:error?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
+    // #endregion
+    throw error;
+  }
 }
 
 export function $isTranslationQuoteNode(

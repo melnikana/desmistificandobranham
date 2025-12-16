@@ -28,6 +28,7 @@ import FloatingToolbarPlugin from "@/components/editor/FloatingToolbarPlugin";
 import SlashCommandPlugin from "@/components/editor/SlashCommandPlugin";
 import QuoteEnterPlugin from "@/components/editor/QuoteEnterPlugin";
 import PlusButtonPlugin from "@/components/editor/PlusButtonPlugin";
+import HorizontalRuleTransformPlugin from "@/components/editor/HorizontalRuleTransformPlugin";
 
 type Props = {
   onChange: (payload: { text: string; json: any; html?: string }) => void;
@@ -84,6 +85,12 @@ function EditorStateListener({ onChange }: { onChange: (payload: { text: string;
   return null;
 }
 export default function LexicalEditorComplete({ onChange, placeholder, initialContent }: Props) {
+  // #region agent log
+  React.useEffect(() => {
+    fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'LexicalEditorComplete.tsx:component',message:'LexicalEditorComplete rendering',data:{hasTranslationQuoteNode:!!TranslationQuoteNode,nodeType:TranslationQuoteNode?.getType?.(),nodeName:TranslationQuoteNode?.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+  }, []);
+  // #endregion
+  
   const initialConfig = {
     namespace: "CreatePostEditor",
     nodes: [
@@ -134,7 +141,7 @@ export default function LexicalEditorComplete({ onChange, placeholder, initialCo
         listitem: "list-item",
       },
       link: "text-blue-600 underline cursor-pointer",
-      quote: "border-l-4 border-gray-300 pl-4 italic text-gray-700 my-2",
+      quote: "border-l-2 pl-4 italic my-2 blockquote-custom",
       horizontalRule: "horizontal-rule-custom",
       codeHighlight: {
         atrule: "color: rgb(136, 19, 145)",
@@ -209,6 +216,7 @@ export default function LexicalEditorComplete({ onChange, placeholder, initialCo
           <MarkdownShortcutPlugin />
           <TabIndentationPlugin />
           <QuoteEnterPlugin />
+          <HorizontalRuleTransformPlugin />
           <PlusButtonPlugin />
           <FloatingToolbarPlugin />
           <SlashCommandPlugin />

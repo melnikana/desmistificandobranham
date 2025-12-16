@@ -150,10 +150,22 @@ export default function SlashCommandPlugin() {
       icon: "feather",
       keywords: ["branham", "citação", "citacao", "tradução", "traducao", "quote"],
       onSelect: () => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SlashCommandPlugin.tsx:branham-quote:onSelect',message:'onSelect called',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
         editor.update(() => {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SlashCommandPlugin.tsx:branham-quote:editor.update',message:'Inside editor.update',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+          // #endregion
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SlashCommandPlugin.tsx:branham-quote:beforeCreate',message:'Before creating TranslationQuoteNode',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             const translationNode = $createTranslationQuoteNode();
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'SlashCommandPlugin.tsx:branham-quote:afterCreate',message:'After creating TranslationQuoteNode',data:{nodeType:translationNode.getType(),nodeKey:translationNode.getKey()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             selection.insertNodes([translationNode]);
             
             // Adiciona parágrafo vazio após

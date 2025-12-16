@@ -146,10 +146,23 @@ export default function PlusButtonPlugin() {
       description: "Citação com fonte de tradução",
       icon: "feather",
       onSelect: () => {
+        // #region agent log
+        fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PlusButtonPlugin.tsx:branham-quote:onSelect',message:'onSelect called',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+        // #endregion
+        // Usar a mesma lógica do comando "/" (SlashCommandPlugin)
         editor.update(() => {
+          // #region agent log
+          fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PlusButtonPlugin.tsx:branham-quote:editor.update',message:'Inside editor.update',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+          // #endregion
           const selection = $getSelection();
           if ($isRangeSelection(selection)) {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PlusButtonPlugin.tsx:branham-quote:beforeCreate',message:'Before creating TranslationQuoteNode',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             const translationNode = $createTranslationQuoteNode();
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/2c063ddf-e9b7-420f-9ec3-100468228a21',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'PlusButtonPlugin.tsx:branham-quote:afterCreate',message:'After creating TranslationQuoteNode',data:{nodeType:translationNode.getType(),nodeKey:translationNode.getKey()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+            // #endregion
             selection.insertNodes([translationNode]);
             
             // Adiciona parágrafo vazio após
@@ -181,45 +194,23 @@ export default function PlusButtonPlugin() {
       description: "Linha divisória",
       icon: "minus",
       onSelect: () => {
-        // Dispara o comando para inserir o HR
-        editor.dispatchCommand(INSERT_HORIZONTAL_RULE_COMMAND, undefined);
-        
-        // Aguarda um momento e então adiciona o parágrafo após o HR
-        requestAnimationFrame(() => {
-          setTimeout(() => {
-            editor.update(() => {
-              const selection = $getSelection();
-              if ($isRangeSelection(selection)) {
-                const anchorNode = selection.anchor.getNode();
-                const topLevelElement = anchorNode.getTopLevelElementOrThrow();
-                
-                // Verifica se o elemento atual é um HR
-                if (topLevelElement instanceof HorizontalRuleNode) {
-                  // Adiciona parágrafo após o HR
-                  const paragraphNode = $createParagraphNode();
-                  topLevelElement.insertAfter(paragraphNode);
-                  paragraphNode.selectEnd();
-                } else {
-                  // Procura pelo HR anterior
-                  let prevSibling = topLevelElement.getPreviousSibling();
-                  while (prevSibling) {
-                    if (prevSibling instanceof HorizontalRuleNode) {
-                      const paragraphNode = $createParagraphNode();
-                      prevSibling.insertAfter(paragraphNode);
-                      paragraphNode.selectEnd();
-                      return;
-                    }
-                    prevSibling = prevSibling.getPreviousSibling();
-                  }
-                  
-                  // Se não encontrou HR, adiciona parágrafo após o elemento atual
-                  const paragraphNode = $createParagraphNode();
-                  topLevelElement.insertAfter(paragraphNode);
-                  paragraphNode.selectEnd();
-                }
-              }
-            });
-          }, 100);
+        editor.update(() => {
+          const selection = $getSelection();
+          if (!$isRangeSelection(selection)) return;
+          
+          const anchorNode = selection.anchor.getNode();
+          const paragraphNode = anchorNode.getTopLevelElementOrThrow();
+          
+          // Criar HR e parágrafo novo
+          const hrNode = new HorizontalRuleNode();
+          const newParagraph = $createParagraphNode();
+          
+          // Substituir parágrafo atual pelo HR e inserir novo parágrafo após
+          paragraphNode.replace(hrNode);
+          hrNode.insertAfter(newParagraph);
+          
+          // Mover cursor para o novo parágrafo
+          newParagraph.selectStart();
         });
         setShowMenu(false);
       },

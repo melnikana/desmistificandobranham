@@ -211,6 +211,8 @@ body {
 .lexical-editor-custom pre[class],
 .lexical-editor-custom div[data-highlight-language],
 .code-block-custom {
+  display: block !important;
+  width: 100% !important;
   background-color: #F8F4EB !important;
   color: #323232;
   font-family: var(--font-space-mono), 'Space Mono', ui-monospace, monospace !important;
@@ -218,8 +220,12 @@ body {
   border-radius: 6px !important;
   margin: 1rem 0 !important;
   overflow-x: auto !important;
-  line-height: 1.6 !important;
+  line-height: 1.5 !important;
   font-size: 0.875rem !important;
+  text-align: left !important;
+  vertical-align: top !important;
+  height: auto !important;
+  min-height: fit-content !important;
 }
 
 /* Estilos padrão para code - SEM !important para permitir override de estilos inline */
@@ -233,6 +239,21 @@ body {
 .lexical-editor-custom pre span[class],
 .lexical-editor-custom code[class] span {
   font-family: var(--font-space-mono), 'Space Mono', ui-monospace, monospace !important;
+}
+
+/* Estilos específicos para code-block-custom - ajuste de espaçamento */
+.code-block-custom {
+  display: block !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.code-block-custom span,
+.code-block-custom * {
+  line-height: inherit !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: inline !important;
 }
 
 /* Cor padrão para elementos sem estilo inline */
@@ -274,12 +295,67 @@ body {
 .lexical-editor-custom hr,
 .horizontal-rule-custom {
   border: none !important;
-  border-top: 2px solid #d1d5db !important;
+  border-top: 0.5px solid #d1d5db !important;
+  border-width: 0.5px !important;
+  border-color: rgba(0, 0, 0, 0) !important;
+  border-top-color: #d1d5db !important;
+  border-style: solid !important;
+  border-image: none !important;
   margin: 1.5rem 0 !important;
   width: 100% !important;
   height: 0 !important;
   background: none !important;
   display: block !important;
+  font-size: 12px !important;
+}
+
+/* Estilos para Horizontal Rule em blocos Lexical */
+.lexical-block-editor hr {
+  border: none !important;
+  border-top: 0.5px solid #d1d5db !important;
+  border-width: 0.5px !important;
+  border-color: rgba(0, 0, 0, 0) !important;
+  border-top-color: #d1d5db !important;
+  border-style: solid !important;
+  border-image: none !important;
+  margin: 1.5rem 0 !important;
+  width: 100% !important;
+  height: 0 !important;
+  background: none !important;
+  display: block !important;
+  font-size: 12px !important;
+}
+
+/* Estilos customizados para blockquote */
+.lexical-editor-custom blockquote.border-l-2,
+.lexical-editor-custom blockquote.border-l-4,
+.lexical-block-editor blockquote.border-l-2,
+.lexical-block-editor blockquote.border-l-4,
+blockquote.blockquote-custom {
+  border-left-color: rgba(50, 50, 50, 1) !important;
+  border-left-width: 2px !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-image: none !important;
+  border-top-width: 0px !important;
+  border-right-width: 0px !important;
+  border-bottom-width: 0px !important;
+  border-top-color: rgba(0, 0, 0, 0) !important;
+  border-right-color: rgba(0, 0, 0, 0) !important;
+  border-bottom-color: rgba(0, 0, 0, 0) !important;
+  border-top-style: none !important;
+  border-right-style: none !important;
+  border-bottom-style: none !important;
+  color: rgba(50, 50, 50, 1) !important;
+}
+
+.lexical-editor-custom blockquote.border-l-2 span,
+.lexical-editor-custom blockquote.border-l-4 span,
+.lexical-block-editor blockquote.border-l-2 span,
+.lexical-block-editor blockquote.border-l-4 span,
+blockquote.blockquote-custom span {
+  color: rgba(50, 50, 50, 1) !important;
 }
 
 /* Estilos para conteúdo HTML renderizado (Citação Branham salva) */
